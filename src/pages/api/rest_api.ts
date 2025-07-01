@@ -39,7 +39,7 @@ export async function checkNameExists(nameToCheck: string): Promise<GradeEntity 
     try{
       const res = await fetch(`http://localhost:4000/grades?name=${encodeURIComponent(nameToCheck)}`);
       
-      
+
       if (!res.ok) {
 
       return null;
@@ -61,30 +61,45 @@ export async function checkNameExists(nameToCheck: string): Promise<GradeEntity 
   }
 }
 export async function createGrade(createGradeData: Omit<GradeEntity, 'id'>): Promise<GradeEntity> {
-
-  const res = await fetch('http://localhost:4000/grades', {
+console.log("createGrade: Sending POST request with data:", createGradeData);
+    const res = await fetch('http://localhost:4000/grades', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(createGradeData),
   });
-  if (!res.ok) {
-    const errorBody = await res.text();  
-    throw new Error(`Failed to create grade: ${res.status}`);
-  }
-  return res.json();
+
+   if (!res.ok) {
+        let errorMessage = `Failed to create grade: ${res.status}`;
+        try {
+            const errorBody = await res.json();
+            errorMessage = errorBody.message || errorMessage;
+        } catch (jsonError) {
+            const textError = await res.text();
+            errorMessage = textError || errorMessage;
+        }
+        throw new Error(errorMessage);
+    }
+    
+    return res.json();
 }
 
 export async function updateGrade(id: number, updatedData: Partial<Omit<GradeEntity, 'id'>>): Promise<GradeEntity> {
+
+  console.log(`updateGrade: Attempting to update grade ${id} with data:`, updatedData);
+
     const res = await fetch(`http://localhost:4000/grades/${id}`, {
         method: 'PATCH', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData),
     });
+
     if (!res.ok) {
-        const errorBody = await res.json();
-        throw new Error(errorBody.message || `Failed to update grade: ${res.status}`);
-    }
-    return res.json();
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Failed to update grade");
+  }
+
+  const updatedGrade = await res.json();
+  return updatedGrade;
 }
 
 export async function deleteGrade(id: number): Promise<void> {
@@ -96,5 +111,15 @@ export async function deleteGrade(id: number): Promise<void> {
         throw new Error(errorBody.message || `Failed to delete grade: ${res.status}`);
     }
 }
+
+
+
+  
+
+
+
+
+
+  
 
 
