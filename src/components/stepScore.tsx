@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 
 interface StepScoreProps {
-  name: string; // รับชื่อจาก StepContainer มาแสดง
+  name: string; 
   score: number | null;
   setScore: (score: number | null) => void;
   onBack: () => void;
-  onNext: () => void; // ไป Step ถัดไป
+  onNext: () => void; 
 }
 
 export default function StepScore({ name, score, setScore, onBack, onNext }: StepScoreProps) {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleScoreSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim(); // value มันคือค่า ที่ผูใช้ พิมพ์ ณ ตอนนั้น
+    const value = e.target.value.trim(); 
 
     if ( value === '' ){
       setScore(null);
       setErrorMessage("");
         return;
-    } //ถ้าผู้ใช้ลบค่าจนเป็นช่องว่าง
+    } 
 
     if (!/^\d*\.?\d*$/.test(value)) {
       setErrorMessage("Please enter numbers only");
@@ -26,17 +26,14 @@ export default function StepScore({ name, score, setScore, onBack, onNext }: Ste
       return;
     }
 
-    const parsedValue = parseFloat(value); // ถ้า value เป็น string แบบ "123", "15.2"
+    const parsedValue = parseFloat(value); 
 
     if (parsedValue > 100) {
     setErrorMessage("Score must not be exceed than 100."); 
     setScore(null);
     return;
   }
-
-
-
-    setScore(parsedValue); // 
+    setScore(parsedValue); 
     setErrorMessage("");
   };
     

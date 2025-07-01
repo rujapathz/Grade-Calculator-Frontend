@@ -122,7 +122,7 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
     const updatedData = { ...existGradeData, name: newName };
     await updateGrade(existGradeData.id, updatedData);
     setUserName(newName);
-    
+
   } catch (error) {
     return; 
   }
@@ -130,7 +130,7 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
   const handleUpdateScoreOnly = async (_: string, newScore: number) => {
     try {
       await handleSaveOrUpdate(newScore);
-      Swal.fire({ icon: 'success', text: 'Score updated successfully!' });
+      Swal.fire({ icon: 'success', text: 'Score updated successfully' });
     }   catch (error: any) {
       Swal.fire({ icon: 'error', text: error.message || 'Error updating score' });
     }
