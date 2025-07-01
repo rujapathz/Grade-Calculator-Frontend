@@ -64,7 +64,7 @@ Defined in: `pages/api/rest_api.tsx`
 - `deleteGrade()`: Delete a grade entry by ID (`DELETE`)    
 
 #### Type Definitions
-- `GradeEntity`: grade record
+- `GradeEntity`: Represents a grade record  
 - `CreateGradeDto`: Used when submitting a new grade
 - `UpdateGradeDto`: Used for updating an existing grade (optional fields)
 
