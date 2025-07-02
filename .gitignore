@@ -1,1 +1,25 @@
-node_modules
+# Next.js build
+.next/
+out/
+
+# node_modules
+node_modules/
+
+# System
+.DS_Store
+.env
+.env.local
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Cache
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional
+*.tsbuildinfo

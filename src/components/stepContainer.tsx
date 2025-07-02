@@ -46,7 +46,6 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
       if (userScore === null || userScore < 0 || userScore > 100) {
         return; 
       }
-      await handleSaveOrUpdate();
     }
   };
 
@@ -70,11 +69,10 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
         grade: userGrade
         
       });
-      Swal.fire( {icon: 'success', text: 'Change Score Successful'})
       setCurrentStep(2) 
 
-    } else { 
-      
+    } else {
+
       await createGrade({
         name : userName,
         score : scoreToUse as number, 
@@ -83,42 +81,60 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
       
       setCurrentStep(2)  
     }
-  } catch (error) {
-    Swal.fire({ icon: 'error', text: 'An error occurred while saving the data.' });
+  } catch (error: any) {
+
+      throw new Error(); 
+    }
   }
-};
+
 
     const handleDelete = async () => {
     if (!existGradeData?.id) {
       return;
     }
+
     try {
+    
       await deleteGrade(existGradeData.id);
-      Swal.fire({icon: 'success', text: 'Delete Successful'})
       setUserName('');
       setUserScore(null);
       setExistGradeData(null);
       setCurrentStep(0);
     } catch(error) {
-    }
+  }
 
 
   };
   const handleUpdateName = async (newName: string) => {
   if (!existGradeData) return;
 
+  if (newName.trim() === existGradeData.name.trim()) {
+    return;
+  }
+
   try {
-    const updatedData = {
-      ...existGradeData,
-      name: newName,
-    };
+    const existing = await checkNameExists(newName);
+
+    if (existing && existing.id !== existGradeData.id) {
+      return; 
+    }
+
+    const updatedData = { ...existGradeData, name: newName };
     await updateGrade(existGradeData.id, updatedData);
     setUserName(newName);
-    Swal.fire({ icon: 'success', text: 'Name Updated Successfully' });
+    
   } catch (error) {
-    Swal.fire({ icon: 'error', text: 'An error occurred while updating the name.' });
+    return; 
   }
 };
+  const handleUpdateScoreOnly = async (_: string, newScore: number) => {
+    try {
+      await handleSaveOrUpdate(newScore);
+      Swal.fire({ icon: 'success', text: 'Score updated successfully!' });
+    }   catch (error: any) {
+      Swal.fire({ icon: 'error', text: error.message || 'Error updating score' });
+    }
+  };
 
 
   const renderStepContent = () => {
@@ -150,7 +166,7 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
             score={userScore}
             setScore={setUserScore}
             onBack={handleBack} 
-            onNext={handleNext} 
+            onNext={handleSaveOrUpdate} 
           />
           </>
         );
@@ -164,13 +180,11 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
               setUserScore(null); 
               setExistGradeData(null);
               setCurrentStep(0); 
-            }}
-              onUpdateGrade={async (nameToUpdate, newScore) =>
-              await handleSaveOrUpdate(newScore)
-              } 
-               onUpdateName={handleUpdateName}
-                onDeleteGrade={handleDelete}
-                existGradeData={existGradeData} 
+            }} 
+              onUpdateGrade={handleUpdateScoreOnly}
+              onUpdateName={handleUpdateName}
+              onDeleteGrade={handleDelete}
+              existGradeData={existGradeData} 
           />
         );
       default:

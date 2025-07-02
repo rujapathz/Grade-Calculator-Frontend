@@ -22,18 +22,22 @@ export default function StepResult({
   existGradeData,
 }: StepResultProps) {
   const [errorMessage, setErrorMessage] = useState<string>(""); 
+  
   const [isEditing, setIsEditing] = useState(false); 
   const [currentScore, setCurrentScore] = useState(startingScore); 
   const [tempScore, setTempScore] = useState<string>(String(startingScore ?? "")); 
   const [tempName, setTempName] = useState<string>(name);
   const [isEditingName, setIsEditingName] = useState(false);
+  const [nameError, setNameError] = useState("");
 
 
   useEffect(() => {
     setCurrentScore(startingScore); 
     setTempScore(String(startingScore ?? '')); 
     setIsEditing(false); 
-  }, [startingScore]);
+    setTempName(name);
+    setIsEditingName(false)
+  }, [startingScore, name]);
 
   
   const getGrade = (s: number): string => {
@@ -56,23 +60,24 @@ export default function StepResult({
       setErrorMessage("Please enter your name.");
       return; 
     }
+
+
     try {
-      await onUpdateGrade(name, numericTempScore);
-      setCurrentScore(numericTempScore); 
-      setIsEditing(false); 
-      setErrorMessage("");
-      Swal.fire({ icon: 'success', text: 'Change Score Succesful' });
-    } catch (error) {
-      return;
-    }
+  await onUpdateGrade(name, numericTempScore);
+  Swal.fire({ icon: 'success', text: 'Score updated successfully' });
+} catch (error: any) {
+  Swal.fire({ icon: 'error', text: error.message });
+}
   };
 
   const handleCancelClick = () => {
-   setTempScore(String(currentScore ?? ''));; 
+    setTempScore(String(currentScore ?? ''));; 
     setIsEditing(false); 
+    setErrorMessage("");
   };
 
   const handleDeleteClick = async () => {
+
     const decisionResult = await Swal.fire({
       text: `Are you sure you want to delete "${name}"`,
       showCancelButton: true,
@@ -90,31 +95,42 @@ export default function StepResult({
         await onDeleteGrade();
         Swal.fire({ icon: 'success', text: 'Delete Successful' });
         onBackToStart();
-      } catch (error) {
-        return;
+      } catch (error: any) {
+        Swal.fire({ icon: 'error', text: error.message });
       }
     }
   };
   const handleEditNameClick = () => {
   setIsEditingName(true);
 };
+
 const handleSaveNameClick = async () => {
-  if (!tempName.trim()) {
+  setErrorMessage("");
+
+  if (!isEditingName || tempName.trim() === "") {
     setErrorMessage("Please enter a name.");
     return;
   }
+
+  if (tempName.trim() === name.trim()) {
+    setIsEditingName(false);
+    setErrorMessage("This is the current name.");
+    return;
+  }
+
   try {
     await onUpdateName(tempName);
     setIsEditingName(false);
-    Swal.fire({ icon: 'success', text: 'Change Name Successful' });
-  } catch (error) {
-    return;
+    setErrorMessage("");
+  } catch (error: any) {
+    setErrorMessage("Unexpected error.");
   }
 };
 
 const handleCancelNameClick = () => {
   setTempName(name);
   setIsEditingName(false);
+  setErrorMessage("");
 };
 
 
@@ -171,20 +187,26 @@ return (
 </div>
 
 {isEditingName && (
-  <div className="flex space-x-2 justify-start mt-2">
-    <button
-      onClick={handleSaveNameClick}
-      className="py-1 px-2 rounded text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-    >
-      Save
-    </button>
-    <button
-      onClick={handleCancelNameClick}
-      className="py-1 px-2 rounded text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-50"
-    >
-      Cancel
-    </button>
-  </div>
+  <>
+    {errorMessage && (
+      <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
+    )}
+
+    <div className="flex space-x-2 justify-start mt-2">
+      <button
+        onClick={handleSaveNameClick}
+        className="py-1 px-2 rounded text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        Save
+      </button>
+      <button
+        onClick={handleCancelNameClick}
+        className="py-1 px-2 rounded text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-50"
+      >
+        Cancel
+      </button>
+    </div>
+  </>
 )}
 
    
@@ -218,6 +240,10 @@ return (
         disabled
         className="rounded-md py-2 px-3 w-full text-lg disabled:opacity-100 disabled:text-gray-900 disabled:bg-transparent"
       />
+
+    )}
+    {nameError && (
+    <p className="text-red-600 text-sm mt-1">{nameError}</p>
     )}
     
     {existGradeData && !isEditing && (
