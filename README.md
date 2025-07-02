@@ -62,7 +62,7 @@ src/
   - `stepResult.tsx`: Displays the calculated grade result
 - `pages/`: Page components and route handling (Next.js)
   - `api/rest_api.tsx`: Contains frontend API functions to call the backend
-  - `grade/index.tsx`: Grade Calculator page that uses server-side rendering (`getServerSideProps`) to fetch initial grade data and renders the UI with `StepContainer`.
+  - `grade/index.tsx`: Grade Calculator page that uses server-side rendering (`getServerSideProps`) to fetch initial grade data and renders the UI with `StepContainer`
 - `styles/`: Styling assets for the web application
   - `global.css`: Tailwind CSS directives and global styles
 
