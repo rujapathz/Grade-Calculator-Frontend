@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { calculateGrade } from '../utils/grade';
 import Swal from 'sweetalert2';
 
 interface StepResultProps {
@@ -39,16 +40,7 @@ export default function StepResult({
     setIsEditingName(false)
   }, [startingScore, name]);
 
-  
-  const getGrade = (s: number): string => {
-    if (s >= 80) return 'A';
-    if (s >= 70) return 'B';
-    if (s >= 60) return 'C';
-    if (s >= 50) return 'D';
-    return 'F';
-  };
-
-  const grade = getGrade(currentScore ?? 0);
+  const grade = calculateGrade(currentScore ?? 0);
 
   const handleEditClick = () => {
     setIsEditing(true); 
@@ -64,7 +56,7 @@ export default function StepResult({
 
     try {
   await onUpdateGrade(name, numericTempScore);
-  Swal.fire({ icon: 'success', text: 'Score updated successfully' });
+  Swal.fire({ icon: 'success', text: 'Change Score Successful' });
 } catch (error: any) {
   Swal.fire({ icon: 'error', text: error.message });
 }
@@ -122,8 +114,12 @@ const handleSaveNameClick = async () => {
     await onUpdateName(tempName);
     setIsEditingName(false);
     setErrorMessage("");
+
+    Swal.fire({icon: 'success',text: 'Change name successful',});
+
+
   } catch (error: any) {
-    setErrorMessage("Unexpected error.");
+    setErrorMessage(error.message || "Unexpected error.");
   }
 };
 
