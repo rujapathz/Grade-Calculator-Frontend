@@ -1,56 +1,42 @@
 import React, { useState } from 'react';
+import { validateScoreInput } from '../utils/validator';
 
 interface StepScoreProps {
-  name: string; // รับชื่อจาก StepContainer มาแสดง
+  name: string; 
   score: number | null;
   setScore: (score: number | null) => void;
   onBack: () => void;
-  onNext: () => void; // ไป Step ถัดไป
+  onNext: () => void; 
 }
 
 export default function StepScore({ name, score, setScore, onBack, onNext }: StepScoreProps) {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleScoreSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim(); // value มันคือค่า ที่ผูใช้ พิมพ์ ณ ตอนนั้น
+    const value = e.target.value; 
 
-    if ( value === '' ){
-      setScore(null);
-      setErrorMessage("");
-        return;
-    } //ถ้าผู้ใช้ลบค่าจนเป็นช่องว่าง
+    const { valid, score, message } = validateScoreInput(value);
 
-    if (!/^\d*\.?\d*$/.test(value)) {
-      setErrorMessage("Please enter numbers only");
-      setScore(null);
-      return;
-    }
-
-    const parsedValue = parseFloat(value); // ถ้า value เป็น string แบบ "123", "15.2"
-
-    if (parsedValue > 100) {
-    setErrorMessage("Score must not be exceed than 100."); 
+  if (!valid) {
+    setErrorMessage(message);
     setScore(null);
     return;
   }
 
-
-
-    setScore(parsedValue); // 
-    setErrorMessage("");
-  };
+  setScore(score);
+  setErrorMessage('');
+};
     
 
   const handleNext = () => {
-    if (score === null || score < 0 || score > 100 || isNaN(score)){
+    if (score === null) {
       setErrorMessage("Score must be a number between 0 and 100.");
       return;
     }
-    setErrorMessage("");
     onNext();
-    
-  }
-  const isNextDisable = score === null || isNaN(score) || score < 0 || score > 100;
+  };
+
+  const isNextDisabled = score === null;
 
   return (
     <div>
@@ -84,11 +70,11 @@ export default function StepScore({ name, score, setScore, onBack, onNext }: Ste
         <button
           onClick={handleNext}
           className={`flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white
-            ${isNextDisable 
+            ${isNextDisabled 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2'}
             focus:outline-none focus:ring-2`}
-          disabled={isNextDisable}
+          disabled={isNextDisabled}
         >
           Next
         </button>
