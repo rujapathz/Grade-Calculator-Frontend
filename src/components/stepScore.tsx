@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { validateScoreInput } from '../utils/validator';
 
 interface StepScoreProps {
   name: string; 
@@ -12,6 +13,21 @@ export default function StepScore({ name, score, setScore, onBack, onNext }: Ste
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleScoreSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+    const value = e.target.value; 
+
+    const { valid, score, message } = validateScoreInput(value);
+
+  if (!valid) {
+    setErrorMessage(message);
+    setScore(null);
+    return;
+  }
+
+  setScore(score);
+  setErrorMessage('');
+};
+
     const value = e.target.value.trim(); 
 
     if ( value === '' ){
@@ -36,18 +52,18 @@ export default function StepScore({ name, score, setScore, onBack, onNext }: Ste
     setScore(parsedValue); 
     setErrorMessage("");
   };
+
     
 
   const handleNext = () => {
-    if (score === null || score < 0 || score > 100 || isNaN(score)){
+    if (score === null) {
       setErrorMessage("Score must be a number between 0 and 100.");
       return;
     }
-    setErrorMessage("");
     onNext();
-    
-  }
-  const isNextDisable = score === null || isNaN(score) || score < 0 || score > 100;
+  };
+
+  const isNextDisabled = score === null;
 
   return (
     <div>
@@ -81,11 +97,11 @@ export default function StepScore({ name, score, setScore, onBack, onNext }: Ste
         <button
           onClick={handleNext}
           className={`flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white
-            ${isNextDisable 
+            ${isNextDisabled 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2'}
             focus:outline-none focus:ring-2`}
-          disabled={isNextDisable}
+          disabled={isNextDisabled}
         >
           Next
         </button>

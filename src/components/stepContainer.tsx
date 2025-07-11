@@ -1,123 +1,139 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
-import { GradeEntity, checkNameExists, createGrade, updateGrade, deleteGrade } from '../pages/api/rest_api';
+import {
+  GradeEntity,
+  useCreateGradeMutation,
+  useUpdateGradeMutation,
+  useDeleteGradeMutation,
+  useLazyGetGradeByNameQuery,
+} from '../service/gradeService';
 import StepName from './stepName';
 import StepScore from './stepScore';
 import StepResult from './stepResult';
+import { calculateGrade } from '../utils/grade';
 
 type stepContainerProps = {
-  allGrades: GradeEntity[]; 
-}
+  allGrades: GradeEntity[];
+};
 
-
-const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
-  const [currentStep, setCurrentStep] = useState(0); 
+const StepContainer: React.FC<stepContainerProps> = ({ allGrades }) => {
+  const [currentStep, setCurrentStep] = useState(0);
   const [userName, setUserName] = useState('');
-  const [userScore, setUserScore] = useState<number | null>(null); 
+  const [userScore, setUserScore] = useState<number | null>(null);
   const [existGradeData, setExistGradeData] = useState<GradeEntity | null>(null);
 
-  const calculateGrade = (score: number) => {
-    if (score >= 80) return 'A';
-    if (score >= 70) return 'B';
-    if (score >= 60) return 'C';
-    if (score >= 50) return 'D';
-    return 'F';
+  const [createGrade] = useCreateGradeMutation();
+  const [updateGrade] = useUpdateGradeMutation();
+  const [deleteGrade] = useDeleteGradeMutation();
+  const [fetchGradeByName] = useLazyGetGradeByNameQuery();
+
+  const resetState = () => {
+    setUserName('');
+    setUserScore(null);
+    setExistGradeData(null);
+    setCurrentStep(0);
   };
-  
-  const handleNext = async () => { 
-    if (currentStep === 0) {
-      const trimName = userName.trim();
-      if (!trimName) { 
-        return; 
+
+  const handleNext = async () => {
+    if (currentStep === 0 && userName.trim()) {
+
+      try {
+        const result = await fetchGradeByName(userName.trim()).unwrap();
+        if (result) {
+          setExistGradeData(result);
+          setUserScore(result.score);
+          setCurrentStep(2);
+        } else {
+          setExistGradeData(null);
+          setCurrentStep(1);
+        }
+      } catch (err) {
       }
-
-    const foundName = await checkNameExists(trimName);
-
-    if (foundName) { 
-      setExistGradeData(foundName); 
-      setUserScore(foundName.score); 
-      setCurrentStep(2); 
-    } else { 
-      setExistGradeData(null);
-      setUserScore(null); 
-      setCurrentStep(1);
-    }
     } else if (currentStep === 1) {
-      if (userScore === null || userScore < 0 || userScore > 100) {
-        return; 
-      }
+    await handleSaveOrUpdate();
     }
   };
 
-  const handleBack = () => { 
-    setCurrentStep((prev) => prev -1);
-  }
+  const handleBack = () => {
+    setCurrentStep((prev) => prev - 1);
+  };
 
-  const handleSaveOrUpdate = async (newScore?: number) => { 
-    const scoreToUse = newScore !== undefined ? newScore : userScore;
-    if (scoreToUse === null || scoreToUse < 0 || scoreToUse > 100) {
-      return;
-    } 
-  
-  const userGrade = calculateGrade(scoreToUse);
+  const handleSaveOrUpdate = async (newScore?: number) => {
+    const scoreToUse = newScore ?? userScore;
+    if (scoreToUse === null || scoreToUse < 0 || scoreToUse > 100) return;
 
-  try {
-    if (existGradeData){
-      await updateGrade(existGradeData.id , { 
-        name : userName,
-        score : scoreToUse as number, 
-        grade: userGrade
-        
-      });
-      setCurrentStep(2) 
-
-    } else {
-
-      await createGrade({
-        name : userName,
-        score : scoreToUse as number, 
-        grade: userGrade,
-      });
-      
-      setCurrentStep(2)  
-    }
-  } catch (error: any) {
-
-      throw new Error(); 
-    }
-  }
-
-
-    const handleDelete = async () => {
-    if (!existGradeData?.id) {
-      return;
-    }
+    const userGrade = calculateGrade(scoreToUse);
 
     try {
-    
-      await deleteGrade(existGradeData.id);
+      if (existGradeData) {
+        
+        await updateGrade({
+          id: existGradeData.id,
+          name: userName,
+          score: scoreToUse,
+          grade: userGrade,
+        }).unwrap();
+
+      } else {
+
+        await createGrade({
+          name: userName,
+          score: scoreToUse,
+          grade: userGrade,
+        }).unwrap();
+      }
+      setCurrentStep(2);
+    } catch (err: any) {
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to save data' });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!existGradeData) return;
+    try {
+      await deleteGrade({ id: existGradeData.id }).unwrap();
       setUserName('');
       setUserScore(null);
       setExistGradeData(null);
       setCurrentStep(0);
-    } catch(error) {
-  }
-
-
-  };
-  const handleUpdateName = async (newName: string) => {
-  if (!existGradeData) return;
-
-  if (newName.trim() === existGradeData.name.trim()) {
-    return;
-  }
-
-  try {
-    const existing = await checkNameExists(newName);
-
-    if (existing && existing.id !== existGradeData.id) {
-      return; 
+    } catch (err: any) {
+      Swal.fire({ icon: 'error', text: err.message || 'Failed to delete' });
     }
+  };
+
+  const handleUpdateName = async (newName: string) => {
+    if (!existGradeData || newName.trim() === existGradeData.name) return;
+    try {
+      const res = await fetch(`http://localhost:4000/grades?name=${encodeURIComponent(newName)}`);
+      const data: GradeEntity[] = await res.json();
+
+      if (data.length > 0 && data[0].id !== existGradeData.id) {
+      
+      throw new Error("This name is already taken.");
+        }
+
+      await updateGrade({ id: existGradeData.id, name: newName }).unwrap();
+      setUserName(newName);
+       
+       Swal.fire({ icon: 'success', text: 'Change Name Successful' });
+    } catch (err) {
+      throw err;
+      
+    }
+  };
+
+  const handleUpdateScoreOnly = async (_: string, newScore: number) => {
+    if (newScore < 0 || newScore > 100) {
+    Swal.fire({ icon: 'error', text: 'Score must be between 0 and 100' });
+    return;
+    }
+
+    
+    try {
+      await handleSaveOrUpdate(newScore);
+      Swal.fire({ icon: 'success', text: 'Change Score Successful' });
+    } catch (error: any) {
+
 
     const updatedData = { ...existGradeData, name: newName };
     await updateGrade(existGradeData.id, updatedData);
@@ -132,13 +148,12 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
       await handleSaveOrUpdate(newScore);
       Swal.fire({ icon: 'success', text: 'Score updated successfully' });
     }   catch (error: any) {
+
       Swal.fire({ icon: 'error', text: error.message || 'Error updating score' });
     }
   };
 
-
   const renderStepContent = () => {
-
     const gpxTitle = (
       <h1 className="text-xl font-bold text-gray-800 mb-6 text-center">
         Grade Point Average ( GPX )
@@ -149,42 +164,33 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
       case 0:
         return (
           <>
-          {gpxTitle}
-          <StepName
-            name={userName}
-            setName={setUserName}
-            onNext={handleNext} 
-          />
+            {gpxTitle}
+            <StepName name={userName} setName={setUserName} onNext={handleNext} />
           </>
         );
       case 1:
         return (
           <>
-          {gpxTitle}
-          <StepScore
-            name={userName} 
-            score={userScore}
-            setScore={setUserScore}
-            onBack={handleBack} 
-            onNext={handleSaveOrUpdate} 
-          />
+            {gpxTitle}
+            <StepScore
+              name={userName}
+              score={userScore}
+              setScore={setUserScore}
+              onBack={handleBack}
+              onNext={handleSaveOrUpdate}
+            />
           </>
         );
-      case 2: 
+      case 2:
         return (
           <StepResult
             name={userName}
             startingScore={userScore}
-            onBackToStart={() => { 
-              setUserName(""); 
-              setUserScore(null); 
-              setExistGradeData(null);
-              setCurrentStep(0); 
-            }} 
-              onUpdateGrade={handleUpdateScoreOnly}
-              onUpdateName={handleUpdateName}
-              onDeleteGrade={handleDelete}
-              existGradeData={existGradeData} 
+            onBackToStart={resetState}
+            onUpdateGrade={handleUpdateScoreOnly}
+            onUpdateName={handleUpdateName}
+            onDeleteGrade={handleDelete}
+            existGradeData={existGradeData}
           />
         );
       default:
@@ -195,11 +201,10 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades = [] }) => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 to-purple-200">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm mx-auto">
-
         {renderStepContent()}
       </div>
     </div>
   );
-  }
+};
 
-  export default StepContainer
+export default StepContainer;
