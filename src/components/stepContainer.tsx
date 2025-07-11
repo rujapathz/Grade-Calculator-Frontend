@@ -127,11 +127,28 @@ const StepContainer: React.FC<stepContainerProps> = ({ allGrades }) => {
     Swal.fire({ icon: 'error', text: 'Score must be between 0 and 100' });
     return;
     }
+
     
     try {
       await handleSaveOrUpdate(newScore);
       Swal.fire({ icon: 'success', text: 'Change Score Successful' });
     } catch (error: any) {
+
+
+    const updatedData = { ...existGradeData, name: newName };
+    await updateGrade(existGradeData.id, updatedData);
+    setUserName(newName);
+
+  } catch (error) {
+    return; 
+  }
+};
+  const handleUpdateScoreOnly = async (_: string, newScore: number) => {
+    try {
+      await handleSaveOrUpdate(newScore);
+      Swal.fire({ icon: 'success', text: 'Score updated successfully' });
+    }   catch (error: any) {
+
       Swal.fire({ icon: 'error', text: error.message || 'Error updating score' });
     }
   };

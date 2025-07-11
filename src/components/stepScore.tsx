@@ -13,6 +13,7 @@ export default function StepScore({ name, score, setScore, onBack, onNext }: Ste
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleScoreSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {
+
     const value = e.target.value; 
 
     const { valid, score, message } = validateScoreInput(value);
@@ -26,6 +27,32 @@ export default function StepScore({ name, score, setScore, onBack, onNext }: Ste
   setScore(score);
   setErrorMessage('');
 };
+
+    const value = e.target.value.trim(); 
+
+    if ( value === '' ){
+      setScore(null);
+      setErrorMessage("");
+        return;
+    } 
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      setErrorMessage("Please enter numbers only");
+      setScore(null);
+      return;
+    }
+
+    const parsedValue = parseFloat(value); 
+
+    if (parsedValue > 100) {
+    setErrorMessage("Score must not be exceed than 100."); 
+    setScore(null);
+    return;
+  }
+    setScore(parsedValue); 
+    setErrorMessage("");
+  };
+
     
 
   const handleNext = () => {
