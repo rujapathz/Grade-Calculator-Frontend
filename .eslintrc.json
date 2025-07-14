@@ -1,0 +1,128 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "extends": [
+        "next",
+        "next/core-web-vitals",
+        "airbnb",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "prettier"
+    ],
+    "plugins": ["react", "@typescript-eslint"],
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "rules": {
+        "@typescript-eslint/restrict-template-expressions": "off",
+        "react/react-in-jsx-scope": "off",
+        "max-len": [
+            "error",
+            120,
+            {
+                "ignoreUrls": true,
+                "ignoreStrings": true,
+                "ignoreComments": true
+            }
+        ],
+        "jsx-a11y/label-has-associated-control": [
+            "error",
+            {
+                "assert": "htmlFor",
+                "depth": 3
+            }
+        ],
+        "semi": ["error", "always"],
+        "comma-dangle": ["error", "only-multiline"],
+        "arrow-body-style": "off",
+        "linebreak-style": "off",
+        "operator-linebreak": ["error", "after", { "overrides": { "?": "ignore", ":": "ignore" } }],
+        "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
+        "import/extensions": ["error", "never"],
+        "react/prop-types": "off",
+        "react/jsx-filename-extension": "off",
+        "react/button-has-type": "off",
+        "react/jsx-props-no-spreading": "off",
+        "react/array-callback-return": "off",
+        "array-callback-return": "off",
+        "react/function-component-definition": [
+            1,
+            {
+                "namedComponents": ["function-declaration", "function-expression", "arrow-function"]
+            }
+        ],
+        "import/no-unresolved": "off",
+        "import/no-extraneous-dependencies": [
+            "error",
+            {
+                "devDependencies": ["__test__/**"]
+            }
+        ],
+        //addon
+        "no-unneeded-ternary": "off",
+        "import/prefer-default-export": "off",
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/ban-types": [
+            "error",
+            {
+                "extendDefaults": true,
+                "types": {
+                    "{}": false
+                }
+            }
+        ],
+        "@typescript-eslint/no-misused-promises": [
+            "error",
+            {
+                "checksVoidReturn": {
+                    "arguments": false,
+                    "attributes": false
+                }
+            }
+        ],
+        "quotes": ["error", "double", { "avoidEscape": true }],
+        "indent": ["error", 4, { "SwitchCase": 1, "ignoreComments": true, "ignoredNodes": ["ConditionalExpression"] }],
+        "react/jsx-indent": ["error", 4],
+        "react/jsx-indent-props": ["error", 4],
+        "@typescript-eslint/camelcase": "off",
+        "no-shadow": "off",
+        "@typescript-eslint/no-shadow": ["error"],
+        "@typescript-eslint/no-explicit-any": 0,
+        "@typescript-eslint/no-unsafe-argument": 0,
+        "@typescript-eslint/no-unsafe-member-access": 0,
+        "@typescript-eslint/no-unsafe-assignment": 0,
+        "@typescript-eslint/no-unsafe-return": 0,
+        "@typescript-eslint/no-unsafe-call": 0,
+        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+        "implicit-arrow-linebreak": 0,
+        "object-curly-newline": "off",
+        "react/jsx-one-expression-per-line": 0,
+        "consistent-return": 0,
+        "react/require-default-props": 0,
+        "react/jsx-no-useless-fragment": 0,
+        "react/jsx-wrap-multilines": [
+            "error",
+            {
+                "declaration": "parens",
+                "assignment": "parens",
+                "return": "parens",
+                "arrow": "parens",
+                "condition": "ignore",
+                "logical": "ignore",
+                "prop": "ignore"
+            }
+        ],
+        "no-nested-ternary": "off",
+        "jsx-a11y/no-static-element-interactions": "off",
+        "react/jsx-curly-newline": "off",
+        "no-param-reassign": ["error", { "props": false }],
+        "@typescript-eslint/no-duplicate-enum-values": 0,
+        "@typescript-eslint/no-unsafe-enum-comparison": 0,
+        "no-case-declarations": 0
+    }
+}
