@@ -1,23 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Lusitana&family=Outfit:wght@100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lusitana&family=Outfit:wght@100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  background: linear-gradient(135deg, #e0f2ff, #f3e8ff);
-  font-family: "Rubik", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: weight;
-  font-style: normal;
+    background: linear-gradient(135deg, #e0f2ff, #f3e8ff);
+    font-family: "Rubik", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: weight;
+    font-style: normal;
 }
 /* ซ่อนลูกศร spinner ของ input type number */
 input.no-spinner::-webkit-inner-spin-button,
 input.no-spinner::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 input.no-spinner {
-  -moz-appearance: textfield; /* สำหรับ Firefox */
+    -moz-appearance: textfield; /* สำหรับ Firefox */
 }
